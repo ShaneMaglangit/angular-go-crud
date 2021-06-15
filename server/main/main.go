@@ -1,57 +1,36 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize: 1024,
-	WriteBufferSize: 1024,
-	// Allow any connection requests regardless of origin
-	CheckOrigin: func(r *http.Request) bool { return true },
+type Transaction struct {
+	Type   string    `json:"type" bson:"type"`
+	Desc   string    `json:"desc" bson:"desc"`
+	Amount float32   `json:"amount" bson:"amount"`
+	Date   time.Time `json:"date" bson:"date"`
 }
 
-// Reader for listening to messages sent to endpoint
-func reader(conn *websocket.Conn) {
-	for {
-		// Read in message
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		// Display message
-		fmt.Println(string(p))
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
-		}
-	}
-}
-
-// Websocket endpoint
-func serveWs(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Host)
-
-	// Upgrade connection to web socket connection
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-	}
-
-	// Listen indefinitely for new messages
-	reader(ws)
-}
+var Transactions []Transaction
 
 func main() {
+	Transactions = []Transaction{
+		{Type: "Income", Desc: "Monthly Earning", Amount: 100.00, Date: time.Now().UTC()},
+		{Type: "Expense", Desc: "Bought Pressure Washer", Amount: 50.00, Date: time.Now().UTC()},
+	}
+
 	// Setup routing
-	http.HandleFunc("/", defaultHandler)
-	http.HandleFunc("/ws", serveWs)
+	router := mux.NewRouter().StrictSlash(true)
+	router.Handle("/favicon.ico", http.NotFoundHandler())
+	router.HandleFunc("/", defaultHandler)
+	router.HandleFunc("/transaction", addTransactionHandler).Methods(http.MethodPost)
 
 	// Get the preferred port to run the server
 	port := os.Getenv("PORT")
@@ -60,8 +39,15 @@ func main() {
 		log.Printf("Defaulting to port %s\n", port)
 	}
 
+	// Setup CORS
+	cors := handlers.CORS(
+		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
+		handlers.AllowedOrigins([]string{"*"}),
+	)
+
 	fmt.Printf("Starting server at port %s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, cors(router)))
 }
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
@@ -70,10 +56,15 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method != "GET" {
-		http.Error(w, "Method is not supported.", http.StatusNotFound)
+	_, _ = fmt.Fprintf(w, "Server running")
+}
+
+func addTransactionHandler(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var transaction Transaction
+	if err := decoder.Decode(&transaction); err != nil {
+		http.Error(w, "Failed request", http.StatusBadRequest)
 		return
 	}
-
-	_, _ = fmt.Fprintf(w, "Hello world!")
+	Transactions = append(Transactions, transaction)
 }

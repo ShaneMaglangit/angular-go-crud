@@ -1,38 +1,36 @@
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
+import {variable} from "@angular/compiler/src/output/output_ast";
+
+interface Transaction {
+  type: string;
+  desc: string;
+  amount: number;
+  date: Date
+}
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+
+export class AppComponent {
   title = 'client';
-  ws = new WebSocket("ws://localhost:8080/ws");
 
-  ngOnInit(): void {
-    this.connect()
-  }
-
-  connect() {
-    this.ws.onopen = () => {
-      console.log("Successfully connected")
+  async sendMessage(msg: string) {
+    let body: Transaction = {
+      "type": "Income",
+      "desc": "Investment Interest",
+      "amount": 75.00,
+      "date": new Date(),
     }
 
-    this.ws.onmessage = (msg) => {
-      console.log(msg)
-    }
-
-    this.ws.onclose = (event) => {
-      console.log("Socket Closed Connection: ", event);
-    };
-
-    this.ws.onerror = (error) => {
-      console.log("Socket Error: ", error);
-    };
-  }
-
-  sendMessage(msg: string) {
-    console.log("sending msg: ", msg);
-    this.ws.send(msg);
+    const response = await fetch("http://localhost:8080/transaction", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8'
+      },
+      body: JSON.stringify(body)
+    })
   }
 }
