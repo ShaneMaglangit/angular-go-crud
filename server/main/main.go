@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+type Response struct {
+	Status string `json:"status" bson:"status"`
+}
+
 type Transaction struct {
 	Type   string    `json:"type" bson:"type"`
 	Desc   string    `json:"desc" bson:"desc"`
@@ -60,11 +64,19 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func addTransactionHandler(w http.ResponseWriter, r *http.Request) {
+	// Get request body
 	decoder := json.NewDecoder(r.Body)
+
+	// Create new transaction
 	var transaction Transaction
 	if err := decoder.Decode(&transaction); err != nil {
 		http.Error(w, "Failed request", http.StatusBadRequest)
 		return
 	}
 	Transactions = append(Transactions, transaction)
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(Response{"ok"})
 }
