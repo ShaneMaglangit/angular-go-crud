@@ -12,11 +12,6 @@ import (
 	"time"
 )
 
-type POSTResponse struct {
-	Status string    `json:"status" bson:"status"`
-	ID     uuid.UUID `json:"id" bson:"id"`
-}
-
 type Response struct {
 	Status string `json:"status" bson:"status"`
 }
@@ -45,6 +40,11 @@ func getTransactionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func addTransactionHandler(w http.ResponseWriter, r *http.Request) {
+	type POSTResponse struct {
+		Status string    `json:"status" bson:"status"`
+		ID     uuid.UUID `json:"id" bson:"id"`
+	}
+
 	// Get request body
 	decoder := json.NewDecoder(r.Body)
 
