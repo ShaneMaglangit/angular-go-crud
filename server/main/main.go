@@ -48,12 +48,20 @@ func addTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	// Get request body
 	decoder := json.NewDecoder(r.Body)
 
-	// Create new transaction.ts
+	// Parse request body to transaction
 	var transaction Transaction
 	if err := decoder.Decode(&transaction); err != nil {
 		http.Error(w, "Invalid Field(s)", http.StatusBadRequest)
 		return
 	}
+
+	// Perform simple validation
+	if transaction.Amount == 0 || transaction.Type == "" {
+		http.Error(w, "Invalid Field(s)", http.StatusBadRequest)
+		return
+	}
+
+	// Append new transaction
 	transaction.ID = uuid.New()
 	Transactions = append(Transactions, transaction)
 
