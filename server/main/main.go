@@ -12,6 +12,11 @@ import (
 	"time"
 )
 
+type POSTResponse struct {
+	Status string    `json:"status" bson:"status"`
+	ID     uuid.UUID `json:"id" bson:"id"`
+}
+
 type Response struct {
 	Status string `json:"status" bson:"status"`
 }
@@ -55,7 +60,55 @@ func addTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(Response{"created"})
+	_ = json.NewEncoder(w).Encode(POSTResponse{"created", transaction.ID})
+}
+
+func updateTransactionHandler(w http.ResponseWriter, r *http.Request) {
+	// Get request body
+	decoder := json.NewDecoder(r.Body)
+
+	// Update transaction
+	var transaction Transaction
+	if err := decoder.Decode(&transaction); err != nil {
+		http.Error(w, "Failed request", http.StatusBadRequest)
+		return
+	}
+
+	for i, t := range Transactions {
+		if t.ID == transaction.ID {
+			Transactions[i] = transaction
+		}
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(Response{"updated"})
+}
+
+func deleteTransactionHandler(w http.ResponseWriter, r *http.Request) {
+	// Get transaction id from params
+	transactionId, err := uuid.Parse(mux.Vars(r)["id"])
+	if err != nil {
+		http.Error(w, "Failed request", http.StatusBadRequest)
+		return
+	}
+
+	for i, t := range Transactions {
+		if t.ID == transactionId {
+			// Remove item from list
+			Transactions = append(Transactions[:i], Transactions[i+1:]...)
+
+			// Send response
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_ = json.NewEncoder(w).Encode(Response{"deleted"})
+			return
+		}
+	}
+
+	// Send error response if item is not found
+	http.Error(w, "Failed request", http.StatusBadRequest)
 }
 
 func main() {
@@ -70,6 +123,8 @@ func main() {
 	router.HandleFunc("/", defaultHandler)
 	router.HandleFunc("/transaction", addTransactionHandler).Methods(http.MethodPost)
 	router.HandleFunc("/transaction", getTransactionHandler).Methods(http.MethodGet)
+	router.HandleFunc("/transaction", updateTransactionHandler).Methods(http.MethodPut)
+	router.HandleFunc("/transaction/{id}", deleteTransactionHandler).Methods(http.MethodDelete)
 
 	// Get the preferred port to run the server
 	port := os.Getenv("PORT")
@@ -81,7 +136,7 @@ func main() {
 	// Setup CORS
 	cors := handlers.CORS(
 		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
-		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "DELETE", "OPTIONS"}),
 		handlers.AllowedOrigins([]string{"*"}),
 	)
 

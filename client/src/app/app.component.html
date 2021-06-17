@@ -40,25 +40,33 @@
 </form>
 <form [formGroup]="transactionForm" (ngSubmit)="updateTransaction()">
   <h2>Update Transaction</h2>
-    <div>
-      <label for="update-id">ID</label>
-      <input id="update-id" type="text" formControlName="id">
-    </div>
-    <div>
-      <label for="update-type">Type</label>
-      <input id="update-type" type="text" formControlName="type">
-    </div>
-    <div>
-      <label for="update-desc">Desc</label>
-      <input id="update-desc" type="text" formControlName="desc">
-    </div>
-    <div>
-      <label for="update-amount">Amount</label>
-      <input id="update-amount" type="number" formControlName="amount">
-    </div>
-    <div>
-      <label for="update-date">Datetime</label>
-      <input id="update-date" type="datetime-local" formControlName="date">
-    </div>
-    <button class="button" type="submit">Add transaction</button>
+  <div>
+    <label for="update-id">ID</label>
+    <input id="update-id" type="text" formControlName="id">
+  </div>
+  <div>
+    <label for="update-type">Type</label>
+    <input id="update-type" type="text" formControlName="type">
+  </div>
+  <div>
+    <label for="update-desc">Desc</label>
+    <input id="update-desc" type="text" formControlName="desc">
+  </div>
+  <div>
+    <label for="update-amount">Amount</label>
+    <input id="update-amount" type="number" formControlName="amount">
+  </div>
+  <div>
+    <label for="update-date">Datetime</label>
+    <input id="update-date" type="datetime-local" formControlName="date">
+  </div>
+  <button class="button" type="submit">Update transaction</button>
+</form>
+<form [formGroup]="transactionForm" (ngSubmit)="deleteTransaction()">
+  <h2>Delete Transaction</h2>
+  <div>
+    <label for="delete-id">ID</label>
+    <input id="delete-id" type="text" formControlName="id">
+  </div>
+  <button class="button" type="submit">Delete transaction</button>
 </form>

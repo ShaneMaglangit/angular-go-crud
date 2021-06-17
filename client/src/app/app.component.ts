@@ -11,14 +11,15 @@ export class AppComponent implements OnInit {
   title = 'client';
   transactions: Transaction[] = [];
   transactionForm = this.formBuilder.group({
-    id: "",
+    id: null,
     type: "",
     desc: "",
     amount: 0,
     date: new Date(),
   })
 
-  constructor(private formBuilder: FormBuilder) {}
+  constructor(private formBuilder: FormBuilder) {
+  }
 
   ngOnInit(): void {
     this.getTransactions()
@@ -32,13 +33,21 @@ export class AppComponent implements OnInit {
   }
 
   addTransaction() {
-    let newTransaction: Transaction = this.transactionForm.value as Transaction
+    let newTransaction: Transaction = {
+      type: this.transactionForm.value.type,
+      desc: this.transactionForm.value.desc,
+      amount: this.transactionForm.value.amount,
+      date: new Date(this.transactionForm.value.date).toISOString(),
+    }
 
     fetch("http://localhost:8080/transaction", {
       method: "POST",
       headers: {'Content-Type': 'application/json;charset=UTF-8'},
       body: JSON.stringify(newTransaction)
-    }).then(() => this.transactions.push(newTransaction))
+    }).then(res => res.json().then(data => {
+      newTransaction.id = data["id"]
+      this.transactions.push(newTransaction)
+    }))
   }
 
   updateTransaction() {
@@ -49,5 +58,16 @@ export class AppComponent implements OnInit {
       headers: {'Content-Type': 'application/json;charset=UTF-8'},
       body: JSON.stringify(updatedTransaction)
     }).then(() => this.transactions.push(updatedTransaction))
+  }
+
+  deleteTransaction() {
+    let transactionId = this.transactionForm.value.id
+
+    fetch("http://localhost:8080/transaction/" + transactionId, {
+      method: "DELETE",
+      headers: {'Content-Type': 'application/json;charset=UTF-8'}
+    }).then(() => {
+      this.transactions = this.transactions.filter(transaction => transaction.id != transactionId)
+    })
   }
 }
