@@ -33,12 +33,8 @@ export class AppComponent implements OnInit {
   }
 
   addTransaction() {
-    let newTransaction: Transaction = {
-      type: this.transactionForm.value.type,
-      desc: this.transactionForm.value.desc,
-      amount: this.transactionForm.value.amount,
-      date: new Date(this.transactionForm.value.date).toISOString(),
-    }
+    let newTransaction: Transaction = this.transactionForm.value as Transaction
+    newTransaction.date = new Date(newTransaction.date).toISOString(),
 
     fetch("http://localhost:8080/transaction", {
       method: "POST",
@@ -52,6 +48,7 @@ export class AppComponent implements OnInit {
 
   updateTransaction() {
     let updatedTransaction: Transaction = this.transactionForm.value as Transaction
+    updatedTransaction.date = new Date(updatedTransaction.date).toISOString(),
 
     fetch("http://localhost:8080/transaction", {
       method: "PUT",
