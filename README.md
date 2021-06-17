@@ -2,7 +2,7 @@
 A demo CRUD application using Angular and Go
 
 
-# How to rebuild locally
+# Rebuild
 Before proceeding, you must have Angular CLI and Go installed in your system.
 
 **Install npm packages**
