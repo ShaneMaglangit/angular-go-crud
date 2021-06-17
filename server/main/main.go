@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
@@ -16,6 +17,7 @@ type Response struct {
 }
 
 type Transaction struct {
+	ID     uuid.UUID `json:"id" bson:"id"`
 	Type   string    `json:"type" bson:"type"`
 	Desc   string    `json:"desc" bson:"desc"`
 	Amount float32   `json:"amount" bson:"amount"`
@@ -24,10 +26,42 @@ type Transaction struct {
 
 var Transactions []Transaction
 
+func defaultHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.Error(w, "404 not found", http.StatusNotFound)
+		return
+	}
+
+	_, _ = fmt.Fprintf(w, "Server running")
+}
+
+func getTransactionHandler(w http.ResponseWriter, r *http.Request) {
+	_ = json.NewEncoder(w).Encode(Transactions)
+}
+
+func addTransactionHandler(w http.ResponseWriter, r *http.Request) {
+	// Get request body
+	decoder := json.NewDecoder(r.Body)
+
+	// Create new transaction.ts
+	var transaction Transaction
+	if err := decoder.Decode(&transaction); err != nil {
+		http.Error(w, "Failed request", http.StatusBadRequest)
+		return
+	}
+	transaction.ID = uuid.New()
+	Transactions = append(Transactions, transaction)
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(Response{"created"})
+}
+
 func main() {
 	Transactions = []Transaction{
-		{Type: "Income", Desc: "Monthly Earning", Amount: 100.00, Date: time.Now().UTC()},
-		{Type: "Expense", Desc: "Bought Pressure Washer", Amount: 50.00, Date: time.Now().UTC()},
+		{ID: uuid.New(), Type: "Income", Desc: "Monthly Earning", Amount: 100.00, Date: time.Now().UTC()},
+		{ID: uuid.New(), Type: "Expense", Desc: "Bought Pressure Washer", Amount: 50.00, Date: time.Now().UTC()},
 	}
 
 	// Setup routing
@@ -35,6 +69,7 @@ func main() {
 	router.Handle("/favicon.ico", http.NotFoundHandler())
 	router.HandleFunc("/", defaultHandler)
 	router.HandleFunc("/transaction", addTransactionHandler).Methods(http.MethodPost)
+	router.HandleFunc("/transaction", getTransactionHandler).Methods(http.MethodGet)
 
 	// Get the preferred port to run the server
 	port := os.Getenv("PORT")
@@ -52,31 +87,4 @@ func main() {
 
 	fmt.Printf("Starting server at port %s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, cors(router)))
-}
-
-func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "404 not found", http.StatusNotFound)
-		return
-	}
-
-	_, _ = fmt.Fprintf(w, "Server running")
-}
-
-func addTransactionHandler(w http.ResponseWriter, r *http.Request) {
-	// Get request body
-	decoder := json.NewDecoder(r.Body)
-
-	// Create new transaction
-	var transaction Transaction
-	if err := decoder.Decode(&transaction); err != nil {
-		http.Error(w, "Failed request", http.StatusBadRequest)
-		return
-	}
-	Transactions = append(Transactions, transaction)
-
-	// Send response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(Response{"created"})
 }

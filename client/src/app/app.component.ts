@@ -1,12 +1,5 @@
-import {Component} from '@angular/core';
-import {variable} from "@angular/compiler/src/output/output_ast";
-
-interface Transaction {
-  type: string;
-  desc: string;
-  amount: number;
-  date: Date
-}
+import {Component, OnInit} from '@angular/core';
+import {FormBuilder} from "@angular/forms";
 
 @Component({
   selector: 'app-root',
@@ -14,23 +7,47 @@ interface Transaction {
   styleUrls: ['./app.component.scss']
 })
 
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'client';
+  transactions: Transaction[] = [];
+  transactionForm = this.formBuilder.group({
+    id: "",
+    type: "",
+    desc: "",
+    amount: 0,
+    date: new Date(),
+  })
 
-  async sendMessage(msg: string) {
-    let body: Transaction = {
-      "type": "Income",
-      "desc": "Investment Interest",
-      "amount": 75.00,
-      "date": new Date(),
-    }
+  constructor(private formBuilder: FormBuilder) {}
 
-    const response = await fetch("http://localhost:8080/transaction", {
+  ngOnInit(): void {
+    this.getTransactions()
+  }
+
+  getTransactions() {
+    fetch("http://localhost:8080/transaction", {
+      method: "GET",
+      headers: {'Content-Type': 'application/json;charset=UTF-8'},
+    }).then(res => res.json().then(transactions => this.transactions = transactions))
+  }
+
+  addTransaction() {
+    let newTransaction: Transaction = this.transactionForm.value as Transaction
+
+    fetch("http://localhost:8080/transaction", {
       method: "POST",
-      headers: {
-        'Content-Type': 'application/json;charset=UTF-8'
-      },
-      body: JSON.stringify(body)
-    })
+      headers: {'Content-Type': 'application/json;charset=UTF-8'},
+      body: JSON.stringify(newTransaction)
+    }).then(() => this.transactions.push(newTransaction))
+  }
+
+  updateTransaction() {
+    let updatedTransaction: Transaction = this.transactionForm.value as Transaction
+
+    fetch("http://localhost:8080/transaction", {
+      method: "PUT",
+      headers: {'Content-Type': 'application/json;charset=UTF-8'},
+      body: JSON.stringify(updatedTransaction)
+    }).then(() => this.transactions.push(updatedTransaction))
   }
 }

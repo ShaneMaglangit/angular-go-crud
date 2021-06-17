@@ -1,0 +1,28 @@
+table {
+  border-collapse: collapse;
+}
+
+form {
+  border: 2px solid black;
+  padding: 8px;
+  display: inline-block;
+
+  h2 {
+    margin: 0;
+  }
+
+  div {
+    display: flex;
+    margin-bottom: 8px;
+
+    label {
+      width: 80px;
+      margin-right: 8px;
+    }
+
+    input {
+      flex: 1;
+    }
+  }
+}
+

@@ -1,1 +1,64 @@
-<button (click)="sendMessage('Hello world')">Send message</button>
+<table border="2px solid black">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Type</th>
+      <th>Desc</th>
+      <th>Amount</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let transaction of transactions">
+      <td>{{ transaction.id }}</td>
+      <td>{{ transaction.type }}</td>
+      <td>{{ transaction.desc }}</td>
+      <td>{{ transaction.amount }}</td>
+      <td>{{ transaction.date | date:"medium" }}</td>
+    </tr>
+  </tbody>
+</table>
+<form [formGroup]="transactionForm" (ngSubmit)="addTransaction()">
+  <h2>Add Transaction</h2>
+  <div>
+    <label for="add-type">Type</label>
+    <input id="add-type" type="text" formControlName="type">
+  </div>
+  <div>
+    <label for="add-desc">Desc</label>
+    <input id="add-desc" type="text" formControlName="desc">
+  </div>
+  <div>
+    <label for="add-amount">Amount</label>
+    <input id="add-amount" type="number" formControlName="amount">
+  </div>
+  <div>
+    <label for="add-date">Datetime</label>
+    <input id="add-date" type="datetime-local" formControlName="date">
+  </div>
+  <button class="button" type="submit">Add transaction</button>
+</form>
+<form [formGroup]="transactionForm" (ngSubmit)="updateTransaction()">
+  <h2>Update Transaction</h2>
+    <div>
+      <label for="update-id">ID</label>
+      <input id="update-id" type="text" formControlName="id">
+    </div>
+    <div>
+      <label for="update-type">Type</label>
+      <input id="update-type" type="text" formControlName="type">
+    </div>
+    <div>
+      <label for="update-desc">Desc</label>
+      <input id="update-desc" type="text" formControlName="desc">
+    </div>
+    <div>
+      <label for="update-amount">Amount</label>
+      <input id="update-amount" type="number" formControlName="amount">
+    </div>
+    <div>
+      <label for="update-date">Datetime</label>
+      <input id="update-date" type="datetime-local" formControlName="date">
+    </div>
+    <button class="button" type="submit">Add transaction</button>
+</form>
