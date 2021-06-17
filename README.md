@@ -18,4 +18,10 @@ npm install
 ng serve --o
 ```
 
+# Libraries and Frameworks
+&nbsp;&nbsp;&nbsp;&nbsp; :heavy_check_mark: Gorilla Mux <br />
+&nbsp;&nbsp;&nbsp;&nbsp; :heavy_check_mark: Gorilla Handlers <br />
+&nbsp;&nbsp;&nbsp;&nbsp; :heavy_check_mark: Google UUID <br />
+&nbsp;&nbsp;&nbsp;&nbsp; :heavy_check_mark: Angular <br />
+
 
