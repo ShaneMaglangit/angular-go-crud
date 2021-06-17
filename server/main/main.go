@@ -51,7 +51,7 @@ func addTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	// Create new transaction.ts
 	var transaction Transaction
 	if err := decoder.Decode(&transaction); err != nil {
-		http.Error(w, "Failed request", http.StatusBadRequest)
+		http.Error(w, "Invalid Field(s)", http.StatusBadRequest)
 		return
 	}
 	transaction.ID = uuid.New()
@@ -70,7 +70,7 @@ func updateTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	// Update transaction
 	var transaction Transaction
 	if err := decoder.Decode(&transaction); err != nil {
-		http.Error(w, "Failed request", http.StatusBadRequest)
+		http.Error(w, "Invalid Field(s)", http.StatusBadRequest)
 		return
 	}
 
@@ -90,7 +90,7 @@ func deleteTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	// Get transaction id from params
 	transactionId, err := uuid.Parse(mux.Vars(r)["id"])
 	if err != nil {
-		http.Error(w, "Failed request", http.StatusBadRequest)
+		http.Error(w, "Invalid ID Format", http.StatusBadRequest)
 		return
 	}
 
@@ -108,7 +108,7 @@ func deleteTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send error response if item is not found
-	http.Error(w, "Failed request", http.StatusBadRequest)
+	http.Error(w, "ID not found", http.StatusBadRequest)
 }
 
 func main() {

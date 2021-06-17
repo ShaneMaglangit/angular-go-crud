@@ -8,7 +8,9 @@ import {FormBuilder} from "@angular/forms";
 })
 
 export class AppComponent implements OnInit {
-  title = 'client';
+  title = "Angular Go CRUD";
+  error: string | null = null;
+
   transactions: Transaction[] = [];
   transactionForm = this.formBuilder.group({
     id: null,
@@ -29,32 +31,58 @@ export class AppComponent implements OnInit {
     fetch("http://localhost:8080/transaction", {
       method: "GET",
       headers: {'Content-Type': 'application/json;charset=UTF-8'},
-    }).then(res => res.json().then(transactions => this.transactions = transactions))
+    }).then(res => {
+      res.json().then(data => {
+        if (!res.ok) {
+          this.error = "LOAD: " + data;
+          return;
+        }
+
+        this.transactions = data
+        this.error = null;
+      })
+    })
   }
 
   addTransaction() {
     let newTransaction: Transaction = this.transactionForm.value as Transaction
     newTransaction.date = new Date(newTransaction.date).toISOString(),
 
-    fetch("http://localhost:8080/transaction", {
-      method: "POST",
-      headers: {'Content-Type': 'application/json;charset=UTF-8'},
-      body: JSON.stringify(newTransaction)
-    }).then(res => res.json().then(data => {
-      newTransaction.id = data["id"]
-      this.transactions.push(newTransaction)
-    }))
+      fetch("http://localhost:8080/transaction", {
+        method: "POST",
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
+        body: JSON.stringify(newTransaction)
+      }).then(res => {
+        res.json().then(data => {
+          if (!res.ok) {
+            this.error = "ADD: " + data;
+            return;
+          }
+
+          newTransaction.id = data["id"]
+          this.transactions.push(newTransaction)
+          this.error = null;
+        })
+      })
   }
 
   updateTransaction() {
     let updatedTransaction: Transaction = this.transactionForm.value as Transaction
     updatedTransaction.date = new Date(updatedTransaction.date).toISOString(),
 
-    fetch("http://localhost:8080/transaction", {
-      method: "PUT",
-      headers: {'Content-Type': 'application/json;charset=UTF-8'},
-      body: JSON.stringify(updatedTransaction)
-    }).then(() => this.transactions.push(updatedTransaction))
+      fetch("http://localhost:8080/transaction", {
+        method: "PUT",
+        headers: {'Content-Type': 'application/json;charset=UTF-8'},
+        body: JSON.stringify(updatedTransaction)
+      }).then(res => {
+        if (!res.ok) {
+          res.text().then(text => this.error = "UPDATE: " + text);
+          return;
+        }
+
+        this.transactions.push(updatedTransaction);
+        this.error = null;
+      })
   }
 
   deleteTransaction() {
@@ -63,8 +91,14 @@ export class AppComponent implements OnInit {
     fetch("http://localhost:8080/transaction/" + transactionId, {
       method: "DELETE",
       headers: {'Content-Type': 'application/json;charset=UTF-8'}
-    }).then(() => {
+    }).then(res => {
+      if (!res.ok) {
+        res.text().then(text => this.error = "DELETE: " + text);
+        return;
+      }
+
       this.transactions = this.transactions.filter(transaction => transaction.id != transactionId)
+      this.error = null;
     })
   }
 }

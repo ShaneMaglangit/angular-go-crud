@@ -1,28 +1,56 @@
 table {
+  width: 100%;
   border-collapse: collapse;
+
+  td, th {
+    padding: 8px;
+  }
 }
 
-form {
-  border: 2px solid black;
-  padding: 8px;
-  display: inline-block;
+#forms-wrapper {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 
-  h2 {
-    margin: 0;
+  form {
+    border: 2px solid black;
+    padding: 8px;
+    display: inline-block;
+    flex: 1;
+
+    h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    div {
+      display: flex;
+      margin-bottom: 8px;
+
+      label {
+        width: 80px;
+        margin-right: 8px;
+      }
+
+      input {
+        flex: 1;
+      }
+    }
+
+    button {
+      margin-top: 8px;
+      float: right;
+    }
   }
+}
 
-  div {
-    display: flex;
-    margin-bottom: 8px;
+#error-box {
+  background: rgba(255, 0, 0, 0.2);
+  margin-bottom: 16px;
+  padding: 8px;
 
-    label {
-      width: 80px;
-      margin-right: 8px;
-    }
-
-    input {
-      flex: 1;
-    }
+  p {
+    margin: 0;
   }
 }
 
