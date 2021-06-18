@@ -32,7 +32,7 @@ func TestAddTransactionHandler(t *testing.T) {
 		handler.ServeHTTP(rec, req)
 
 		if status := rec.Code; status != testCase.want {
-			t.Errorf("%s: Handler returned wrong status code: got %v want %v", testCase.name, status, testCase.want)
+			t.Fatalf("%s: Handler returned wrong status code, got %v want %v", testCase.name, status, testCase.want)
 		}
 	}
 }
