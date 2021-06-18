@@ -14,6 +14,7 @@ func TestAddTransactionHandler(t *testing.T) {
 		want  int
 	}
 
+	// Declare test cases
 	tests := []test{
 		{"Complete Field", []byte(`{"type": "Income", "desc": "Weekly earning", "amount": 20.00}`), http.StatusCreated},
 		{"Missing Type", []byte(`{"desc": "Weekly earning", "amount": 20.00}`), http.StatusBadRequest},
@@ -22,17 +23,23 @@ func TestAddTransactionHandler(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		req, err := http.NewRequest("POST", "localhost:8080/transaction", bytes.NewReader(testCase.input))
-		if err != nil {
-			t.Fatal(err)
-		}
+		// Start sub tests
+		t.Run(testCase.name, func(t *testing.T) {
+			// Create requests
+			req, err := http.NewRequest("POST", "localhost:8080/transaction", bytes.NewReader(testCase.input))
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		rec := httptest.NewRecorder()
-		handler := http.HandlerFunc(addTransactionHandler)
-		handler.ServeHTTP(rec, req)
+			// Serve http requests
+			rec := httptest.NewRecorder()
+			handler := http.HandlerFunc(addTransactionHandler)
+			handler.ServeHTTP(rec, req)
 
-		if status := rec.Code; status != testCase.want {
-			t.Fatalf("%s: Handler returned wrong status code, got %v want %v", testCase.name, status, testCase.want)
-		}
+			// Test results
+			if status := rec.Code; status != testCase.want {
+				t.Fatalf("Handler returned wrong status code, got %v want %v", status, testCase.want)
+			}
+		})
 	}
 }
